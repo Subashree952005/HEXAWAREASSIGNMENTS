@@ -2,34 +2,40 @@ version: "3.9"
 
 services:
 
-  db:
+  postgres:
     image: postgres:15
     container_name: company-postgres
-    restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: companydb
-    ports:
-      - "5434:5432"
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: company_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - company-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  company_service:
+  company-service:
     build: .
     container_name: company-service
-    restart: always
-    depends_on:
-      - db
     ports:
-      - "8002:8000"
+      - "8003:8003"
     env_file:
       - .env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - company-network
 
 volumes:
   postgres_data:
+
+networks:
+  company-network:

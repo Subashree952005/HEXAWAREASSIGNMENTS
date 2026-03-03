@@ -1,27 +1,24 @@
 from sqlalchemy.orm import Session
-from app.schemas.company_schema import CompanyCreate, CompanyUpdate
-from app.repositories import company_repository
+from app.repositories.company_repository import (
+    create_company,
+    get_all_companies,
+    get_company_by_id,
+    delete_company
+)
 
-def create_company(db: Session, company: CompanyCreate):
-    return company_repository.create(db, company.model_dump())
 
-def get_company(db: Session, company_id: int):
-    return company_repository.get_by_id(db, company_id)
+def create_company_service(db: Session, company):
+    return create_company(db, company.dict())
 
-def get_companies(db: Session):
-    return company_repository.get_all(db)
 
-def update_company(db: Session, company_id: int, data: CompanyUpdate):
-    company = company_repository.get_by_id(db, company_id)
+def list_companies_service(db: Session):
+    return get_all_companies(db)
+
+
+def delete_company_service(db: Session, company_id: int):
+    company = get_company_by_id(db, company_id)
     if not company:
-        return None
+        raise Exception("Company not found")
 
-    update_data = data.model_dump(exclude_unset=True)
-    return company_repository.update(db, company, update_data)
-
-def delete_company(db: Session, company_id: int):
-    company = company_repository.get_by_id(db, company_id)
-    if not company:
-        return None
-
-    return company_repository.delete(db, company)
+    delete_company(db, company)
+    return {"message": "Company deleted successfully"}

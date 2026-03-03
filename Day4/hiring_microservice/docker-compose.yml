@@ -1,36 +1,84 @@
 version: "3.9"
 
 services:
-  auth_service:
-    build:
-      context: ./auth_service
-      dockerfile: Dockerfile
-    ports:
-      - "8001:8000"
-    env_file:
-      - .env.docker
-    depends_on:
-      - db
-    restart: always
-    networks:
-      - auth-network
 
-  db:
+  postgres:
     image: postgres:15
-    container_name: auth-postgres
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: authdb
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hiring_db
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     networks:
-      - auth-network
+      - hiring-network
 
-volumes:
-  postgres_data:
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    image: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - user-service
+      - job-service
+      - company-service
+      - application-service
+    networks:
+      - hiring-network
+
+  auth-service:
+    build: ./auth_service
+    container_name: auth-service
+    env_file:
+      - ./auth_service/.env.docker
+    depends_on:
+      - postgres
+    networks:
+      - hiring-network
+
+  user-service:
+    build: ./user_service
+    container_name: user-service
+    env_file:
+      - ./user_service/.env.docker
+    depends_on:
+      - postgres
+    networks:
+      - hiring-network
+
+  job-service:
+    build: ./job_service
+    container_name: job-service
+    env_file:
+      - ./job_service/.env.docker
+    depends_on:
+      - postgres
+    networks:
+      - hiring-network
+
+  company-service:
+    build: ./company_service
+    container_name: company-service
+    env_file:
+      - ./company_service/.env.docker
+    depends_on:
+      - postgres
+    networks:
+      - hiring-network
+
+  application-service:
+    build: ./application_service
+    container_name: application-service
+    env_file:
+      - ./application_service/.env.docker
+    depends_on:
+      - postgres
+    networks:
+      - hiring-network
 
 networks:
-  auth-network:
+  hiring-network:
+    driver: bridge

@@ -1,27 +1,23 @@
 from sqlalchemy.orm import Session
 from app.models.company import Company
 
-def create(db: Session, data: dict):
-    company = Company(**data)
+
+def create_company(db: Session, company_data: dict):
+    company = Company(**company_data)
     db.add(company)
     db.commit()
     db.refresh(company)
     return company
 
-def get_by_id(db: Session, company_id: int):
-    return db.query(Company).filter(Company.id == company_id).first()
 
-def get_all(db: Session):
+def get_all_companies(db: Session):
     return db.query(Company).all()
 
-def update(db: Session, company, update_data: dict):
-    for key, value in update_data.items():
-        setattr(company, key, value)
-    db.commit()
-    db.refresh(company)
-    return company
 
-def delete(db: Session, company):
+def get_company_by_id(db: Session, company_id: int):
+    return db.query(Company).filter(Company.id == company_id).first()
+
+
+def delete_company(db: Session, company: Company):
     db.delete(company)
     db.commit()
-    return company

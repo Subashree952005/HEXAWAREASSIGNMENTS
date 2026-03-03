@@ -1,17 +1,18 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from datetime import datetime
 
-class CompanyBase(BaseModel):
+
+class CompanyCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    location: str
+    description: str
 
-class CompanyCreate(CompanyBase):
-    pass
 
-class CompanyUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-
-class CompanyResponse(CompanyBase):
+class CompanyResponse(BaseModel):
     id: int
+    name: str
+    location: str
+    description: str
+    created_at: datetime
+
     model_config = ConfigDict(from_attributes=True)
